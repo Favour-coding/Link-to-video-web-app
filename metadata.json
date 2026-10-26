@@ -1,0 +1,6 @@
+{
+  "name": "LinkSaver - Video Downloader",
+  "description": "Mobile-first social media video downloader for YouTube, Instagram, TikTok, Facebook, and X.",
+  "requestFramePermissions": ["clipboard-read", "clipboard-write"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
