@@ -22,7 +22,7 @@ import { PreparingToast } from './components/PreparingToast.tsx';
 import { VideoInfo, FormatOption, HistoryItem, ErrorState } from './types.ts';
 import { isValidUrl, detectPlatform, formatPlaylistCount } from './utils/helpers.ts';
 import { SITE_CONFIGS, validateUrlForSite, SiteConfig } from './utils/siteConfigs.ts';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 // =========================================================================
 // BACKEND CONFIGURATION
@@ -77,7 +77,7 @@ export default function App() {
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) metaDesc.setAttribute('content', config.metaDescription);
       } else {
-        document.title = 'FavouraFetch - Paste. Pick. Fetch. | Video Downloader';
+        document.title = 'FavouraFetch - Video Downloader';
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
           metaDesc.setAttribute(
@@ -423,8 +423,8 @@ export default function App() {
         {/* Hero Header */}
         <div className="text-center mb-6 sm:mb-8">
           {/* Back to all sites link when on a dedicated site page */}
-          {currentSiteConfig ? (
-            <div className="flex justify-center mb-3">
+          {currentSiteConfig && (
+            <div className="flex justify-center mb-4">
               <button
                 type="button"
                 onClick={() => navigateTo('')}
@@ -433,12 +433,6 @@ export default function App() {
                 <ArrowLeft className="w-3.5 h-3.5 text-[#00C2FF]" />
                 <span>Back to all sites</span>
               </button>
-            </div>
-          ) : (
-            /* Tagline Badge for Home Page */
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0E1526] border border-[#1B2742] text-xs font-semibold text-[#00C2FF] uppercase tracking-wider mb-4 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-[#7A3CFF]" />
-              <span>Paste. Pick. Fetch.</span>
             </div>
           )}
 

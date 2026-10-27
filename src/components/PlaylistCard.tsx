@@ -13,7 +13,8 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { VideoInfo, FormatOption, PlaylistEntry } from '../types.ts';
-import { formatDuration, formatPlaylistCount, getPlatformMeta } from '../utils/helpers.ts';
+import { formatDuration, formatPlaylistCount } from '../utils/helpers.ts';
+import { resolveSiteBrand } from '../utils/siteConfigs.ts';
 
 interface PlaylistCardProps {
   playlist: VideoInfo;
@@ -33,7 +34,8 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
   const [copiedTitle, setCopiedTitle] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  const platformMeta = playlist.platform ? getPlatformMeta(playlist.platform) : null;
+  const siteBrand = resolveSiteBrand(playlist.site || playlist.platform, playlist.originalUrl);
+  const BrandIcon = siteBrand.icon;
   const countText = formatPlaylistCount(playlist);
 
   const handleCopyTitle = () => {
@@ -51,17 +53,21 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
       {/* Top Bar with "Change link" button */}
       <div className="px-4 sm:px-6 py-3.5 bg-[#070B16] border-b border-[#1B2742] flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          {platformMeta && (
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${platformMeta.bg}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-              {platformMeta.name}
-            </span>
-          )}
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-[#0E1526] border border-[#1B2742] shadow-sm">
+            <BrandIcon
+              className="w-5 h-5 shrink-0"
+              style={{ color: siteBrand.color }}
+              aria-label={siteBrand.name}
+              role="img"
+            />
+            <span style={{ color: siteBrand.color }}>{siteBrand.name}</span>
+          </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#7A3CFF]/15 border border-[#7A3CFF]/30 text-[#00C2FF]">
             <ListVideo className="w-3.5 h-3.5" />
             Playlist
           </span>
         </div>
+
 
         {/* Change Link Button */}
         <button

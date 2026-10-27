@@ -12,6 +12,98 @@ import {
   SiThreads,
   SiVk,
 } from 'react-icons/si';
+import { Globe } from 'lucide-react';
+
+export interface SiteBrandMeta {
+  id: string;
+  name: string;
+  color: string;
+  icon: React.ComponentType<{
+    className?: string;
+    style?: React.CSSProperties;
+    'aria-label'?: string;
+    role?: string;
+  }>;
+}
+
+export const KNOWN_BRANDS: Record<string, SiteBrandMeta> = {
+  youtube: { id: 'youtube', name: 'YouTube', color: '#FF0000', icon: SiYoutube },
+  tiktok: { id: 'tiktok', name: 'TikTok', color: '#00F2FE', icon: SiTiktok },
+  instagram: { id: 'instagram', name: 'Instagram', color: '#E4405F', icon: SiInstagram },
+  facebook: { id: 'facebook', name: 'Facebook', color: '#1877F2', icon: SiFacebook },
+  x: { id: 'x', name: 'X', color: '#FFFFFF', icon: SiX },
+  vimeo: { id: 'vimeo', name: 'Vimeo', color: '#1AB7EA', icon: SiVimeo },
+  dailymotion: { id: 'dailymotion', name: 'Dailymotion', color: '#0066DC', icon: SiDailymotion },
+  reddit: { id: 'reddit', name: 'Reddit', color: '#FF4500', icon: SiReddit },
+  pinterest: { id: 'pinterest', name: 'Pinterest', color: '#E60023', icon: SiPinterest },
+  threads: { id: 'threads', name: 'Threads', color: '#FFFFFF', icon: SiThreads },
+  vk: { id: 'vk', name: 'VK', color: '#0077FF', icon: SiVk },
+};
+
+/**
+ * Detects the site from the backend's "site" value and falls back to URL hostname.
+ * Matching is case-insensitive.
+ * Returns official brand name (e.g. "YouTube", "TikTok"), brand accent color, and crisp SVG icon.
+ * For any unrecognized site, returns a generic Globe icon.
+ */
+export function resolveSiteBrand(siteValue?: string, rawUrl?: string): SiteBrandMeta {
+  const cleanSite = (siteValue || '').trim().toLowerCase();
+
+  // 1. Direct match by site value from backend (case-insensitive)
+  if (cleanSite) {
+    if (cleanSite.includes('youtube') || cleanSite === 'yt') return KNOWN_BRANDS.youtube;
+    if (cleanSite.includes('tiktok')) return KNOWN_BRANDS.tiktok;
+    if (cleanSite.includes('instagram') || cleanSite === 'insta' || cleanSite === 'ig') return KNOWN_BRANDS.instagram;
+    if (cleanSite.includes('facebook') || cleanSite === 'fb') return KNOWN_BRANDS.facebook;
+    if (cleanSite === 'x' || cleanSite.includes('twitter')) return KNOWN_BRANDS.x;
+    if (cleanSite.includes('vimeo')) return KNOWN_BRANDS.vimeo;
+    if (cleanSite.includes('dailymotion') || cleanSite.includes('daily motion')) return KNOWN_BRANDS.dailymotion;
+    if (cleanSite.includes('reddit')) return KNOWN_BRANDS.reddit;
+    if (cleanSite.includes('pinterest')) return KNOWN_BRANDS.pinterest;
+    if (cleanSite.includes('threads')) return KNOWN_BRANDS.threads;
+    if (cleanSite === 'vk' || cleanSite.includes('vkontakte') || cleanSite.includes('vkvideo')) return KNOWN_BRANDS.vk;
+  }
+
+  // 2. Fallback match by pasted link's hostname
+  if (rawUrl) {
+    try {
+      let toParse = rawUrl.trim();
+      if (!/^https?:\/\//i.test(toParse)) {
+        toParse = 'https://' + toParse;
+      }
+      const parsed = new URL(toParse);
+      const host = parsed.hostname.toLowerCase();
+
+      if (host.includes('youtube.com') || host.includes('youtu.be')) return KNOWN_BRANDS.youtube;
+      if (host.includes('tiktok.com')) return KNOWN_BRANDS.tiktok;
+      if (host.includes('instagram.com') || host.includes('instagr.am')) return KNOWN_BRANDS.instagram;
+      if (host.includes('facebook.com') || host.includes('fb.watch') || host.includes('fb.com')) return KNOWN_BRANDS.facebook;
+      if (host.includes('x.com') || host.includes('twitter.com') || host.includes('t.co')) return KNOWN_BRANDS.x;
+      if (host.includes('vimeo.com')) return KNOWN_BRANDS.vimeo;
+      if (host.includes('dailymotion.com') || host.includes('dai.ly')) return KNOWN_BRANDS.dailymotion;
+      if (host.includes('reddit.com') || host.includes('redd.it')) return KNOWN_BRANDS.reddit;
+      if (host.includes('pinterest.com') || host.includes('pin.it')) return KNOWN_BRANDS.pinterest;
+      if (host.includes('threads.net') || host.includes('threads.com')) return KNOWN_BRANDS.threads;
+      if (host.includes('vk.com') || host.includes('vk.ru') || host.includes('vkvideo.ru')) return KNOWN_BRANDS.vk;
+    } catch {
+      // Ignore URL parsing errors
+    }
+  }
+
+  // 3. Fallback for any other site: show generic globe icon
+  let displayName = 'Web Video';
+  if (siteValue && siteValue.trim()) {
+    const raw = siteValue.trim();
+    displayName = raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  return {
+    id: 'other',
+    name: displayName,
+    color: '#00C2FF',
+    icon: Globe,
+  };
+}
 
 export interface SiteConfig {
   id: string;
@@ -24,6 +116,7 @@ export interface SiteConfig {
   headingPrefix: string;
   metaDescription: string;
 }
+
 
 export const SITE_CONFIGS: Record<string, SiteConfig> = {
   youtube: {

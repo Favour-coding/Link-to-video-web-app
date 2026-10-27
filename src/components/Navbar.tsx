@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, ArrowDown } from 'lucide-react';
 
 interface NavbarProps {
@@ -8,104 +8,322 @@ interface NavbarProps {
 
 export const LOGO_URL = "/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png";
 
-const FULL_WORD = "favourafetch";
-const FAVOURA_LEN = 7; // "favoura" = 7 characters, "fetch" = 5 characters
+export const FULL_WORD = "favourafetch";
+export const LETTERS = FULL_WORD.split('');
+
+export type WordmarkEffect =
+  | 'typing'
+  | 'wave'
+  | 'flip'
+  | 'glitch'
+  | 'shimmer'
+  | 'drop_in'
+  | 'scatter'
+  | 'pulse';
+
+const ALL_EFFECTS: WordmarkEffect[] = [
+  'typing',
+  'wave',
+  'flip',
+  'glitch',
+  'shimmer',
+  'drop_in',
+  'scatter',
+  'pulse',
+];
+
+// Scatter start offsets for the 12 letters
+const SCATTER_OFFSETS = [
+  { tx: '-7px', ty: '-5px', rot: '-10deg' }, // f
+  { tx: '6px', ty: '7px', rot: '8deg' },    // a
+  { tx: '-5px', ty: '6px', rot: '-7deg' },  // v
+  { tx: '7px', ty: '-6px', rot: '11deg' },  // o
+  { tx: '-6px', ty: '-4px', rot: '-9deg' }, // u
+  { tx: '5px', ty: '6px', rot: '7deg' },    // r
+  { tx: '-7px', ty: '5px', rot: '-12deg' }, // a
+  { tx: '6px', ty: '-5px', rot: '10deg' },  // f
+  { tx: '-6px', ty: '7px', rot: '-8deg' },  // e
+  { tx: '7px', ty: '5px', rot: '9deg' },    // t
+  { tx: '-5px', ty: '-6px', rot: '-11deg' },// c
+  { tx: '6px', ty: '-4px', rot: '8deg' },   // h
+];
 
 /**
- * AnimatedWordmark renders "favourafetch" typed one letter at a time with a blinking cursor.
- * Uses an invisible reservation layer to prevent layout shift.
- * Respects prefers-reduced-motion.
+ * Custom hook to control random animation scheduling for the wordmark.
+ * - Always plays 'typing' on page load.
+ * - Waits random 4-9s between effects.
+ * - Never plays the same effect twice in a row.
+ * - Wordmark rests fully visible and still between effects.
+ * - Pauses when tab is hidden or user is typing in link box.
+ * - Respects prefers-reduced-motion.
  */
-const AnimatedWordmark: React.FC = () => {
-  const [typedLength, setTypedLength] = useState<number>(FULL_WORD.length);
+function useWordmarkEffects() {
+  const [activeEffect, setActiveEffect] = useState<WordmarkEffect | null>('typing');
+  const [typedCount, setTypedCount] = useState<number>(0);
+  const [showCursor, setShowCursor] = useState<boolean>(true);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
+  const [isTabHidden, setIsTabHidden] = useState<boolean>(false);
+  const [isTypingInBox, setIsTypingInBox] = useState<boolean>(false);
 
+  const lastEffectRef = useRef<WordmarkEffect | null>('typing');
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
+
+  const clearAllTimers = () => {
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current = [];
+  };
+
+  const addTimer = (fn: () => void, delayMs: number) => {
+    const id = setTimeout(() => {
+      timersRef.current = timersRef.current.filter((t) => t !== id);
+      fn();
+    }, delayMs);
+    timersRef.current.push(id);
+    return id;
+  };
+
+  // 1. Reduced motion check
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
-
-    const handler = (e: MediaQueryListEvent) => {
-      setPrefersReducedMotion(e.matches);
-    };
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
-    }
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener?.('change', handler);
+    return () => mediaQuery.removeEventListener?.('change', handler);
   }, []);
 
+  // 2. Tab visibility check (document.visibilityState)
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onVisibility = () => {
+      setIsTabHidden(document.visibilityState === 'hidden');
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  // 3. Detect when user is typing in the link input box
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const isLinkBox = (target: EventTarget | null) => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      return target.tagName === 'INPUT' || Boolean(target.closest('#video-input-section'));
+    };
+    const onFocusIn = (e: FocusEvent) => {
+      if (isLinkBox(e.target)) setIsTypingInBox(true);
+    };
+    const onFocusOut = (e: FocusEvent) => {
+      if (isLinkBox(e.target)) setIsTypingInBox(false);
+    };
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
+
+  // 4. Main animation loop and scheduler
+  useEffect(() => {
+    // If reduced motion is active, stay static forever
     if (prefersReducedMotion) {
-      setTypedLength(FULL_WORD.length);
+      clearAllTimers();
+      setActiveEffect(null);
+      setTypedCount(LETTERS.length);
+      setShowCursor(false);
       return;
     }
 
-    let timer: NodeJS.Timeout;
-    let currentLen = 0;
-    setTypedLength(0);
+    // If tab is hidden or user is interacting with the link box, rest still and pause
+    if (isTabHidden || isTypingInBox) {
+      clearAllTimers();
+      setActiveEffect(null);
+      setTypedCount(LETTERS.length);
+      setShowCursor(false);
+      return;
+    }
 
-    // Phase machine: typing (120ms/char) -> pause_full (2000ms) -> deleting (70ms/char) -> pause_empty (400ms) -> repeat
-    let phase: 'typing' | 'pause_full' | 'deleting' | 'pause_empty' = 'typing';
+    // Runs typing effect (letters appear 1 by 1, hold with cursor, then delete)
+    const playTypingEffect = (onComplete: () => void) => {
+      setActiveEffect('typing');
+      setShowCursor(true);
+      setTypedCount(0);
 
-    const tick = () => {
-      if (phase === 'typing') {
-        currentLen += 1;
-        setTypedLength(currentLen);
-        if (currentLen >= FULL_WORD.length) {
-          phase = 'pause_full';
-          timer = setTimeout(tick, 2000); // cursor blinks for 2 seconds after completion
+      let current = 0;
+      const typeInterval = 110;
+      const totalChars = LETTERS.length;
+
+      const typeStep = () => {
+        if (current < totalChars) {
+          current += 1;
+          setTypedCount(current);
+          addTimer(typeStep, typeInterval);
         } else {
-          timer = setTimeout(tick, 120); // each letter appears every 120ms
+          // Hold full with blinking cursor for 1.1s
+          addTimer(() => {
+            // Delete letter by letter
+            const deleteStep = () => {
+              if (current > 0) {
+                current -= 1;
+                setTypedCount(current);
+                addTimer(deleteStep, 55);
+              } else {
+                // Done deleting: finish typing effect
+                setShowCursor(false);
+                setTypedCount(totalChars);
+                setActiveEffect(null); // Return to idle, resting fully visible and still
+                onComplete();
+              }
+            };
+            deleteStep();
+          }, 1100);
         }
-      } else if (phase === 'pause_full') {
-        phase = 'deleting';
-        timer = setTimeout(tick, 70); // start deleting letter by letter every 70ms
-      } else if (phase === 'deleting') {
-        currentLen -= 1;
-        setTypedLength(currentLen);
-        if (currentLen <= 0) {
-          phase = 'pause_empty';
-          timer = setTimeout(tick, 400); // pauses 400ms before typing again
-        } else {
-          timer = setTimeout(tick, 70); // each deletion takes 70ms
-        }
-      } else if (phase === 'pause_empty') {
-        phase = 'typing';
-        timer = setTimeout(tick, 120);
-      }
+      };
+
+      addTimer(typeStep, typeInterval);
     };
 
-    timer = setTimeout(tick, 120);
+    // Schedules the next random effect after 4 to 9 seconds
+    const scheduleNext = () => {
+      // Random 4 to 9 seconds wait (4000ms to 9000ms)
+      const waitTime = Math.floor(Math.random() * 5001) + 4000;
 
-    return () => clearTimeout(timer);
-  }, [prefersReducedMotion]);
+      addTimer(() => {
+        // Pick an effect different from the last one (never play same twice in a row)
+        const candidates = ALL_EFFECTS.filter((e) => e !== lastEffectRef.current);
+        const nextEffect = candidates[Math.floor(Math.random() * candidates.length)];
+        lastEffectRef.current = nextEffect;
 
-  const favouraSlice = FULL_WORD.slice(0, Math.min(typedLength, FAVOURA_LEN));
-  const fetchSlice = typedLength > FAVOURA_LEN ? FULL_WORD.slice(FAVOURA_LEN, typedLength) : '';
+        if (nextEffect === 'typing') {
+          playTypingEffect(() => {
+            scheduleNext();
+          });
+        } else {
+          setActiveEffect(nextEffect);
+
+          // Determine effect duration (~2 to 3 seconds, glitch ~600ms)
+          let effectDuration = 2200;
+          if (nextEffect === 'glitch') effectDuration = 650;
+          else if (nextEffect === 'flip') effectDuration = 1800;
+          else if (nextEffect === 'wave') effectDuration = 2400;
+          else if (nextEffect === 'shimmer') effectDuration = 2000;
+          else if (nextEffect === 'drop_in') effectDuration = 1700;
+          else if (nextEffect === 'scatter') effectDuration = 1600;
+          else if (nextEffect === 'pulse') effectDuration = 1850;
+
+          addTimer(() => {
+            setActiveEffect(null); // Wordmark rests fully visible and still
+            scheduleNext();
+          }, effectDuration);
+        }
+      }, waitTime);
+    };
+
+    // On initial mount, always play typing effect first
+    if (lastEffectRef.current === 'typing' && activeEffect === 'typing') {
+      playTypingEffect(() => {
+        scheduleNext();
+      });
+    } else {
+      // Resuming from pause (resting still, wait 4-9s for next effect)
+      scheduleNext();
+    }
+
+    return () => {
+      clearAllTimers();
+    };
+  }, [prefersReducedMotion, isTabHidden, isTypingInBox]);
+
+  return {
+    activeEffect,
+    typedCount,
+    showCursor,
+    prefersReducedMotion,
+  };
+}
+
+/**
+ * AnimatedWordmark renders "favourafetch" split into individual letter spans.
+ * Reserves full width of the text at all times with an invisible layer.
+ * Plays 8 distinctive animations using transform and opacity.
+ */
+const AnimatedWordmark: React.FC = () => {
+  const { activeEffect, typedCount, showCursor, prefersReducedMotion } = useWordmarkEffects();
 
   return (
     <div
       className="relative inline-flex items-center text-[clamp(18px,5vw,26px)] font-bold tracking-tight whitespace-nowrap select-none min-w-0"
-      aria-hidden="true"
+      aria-label="favourafetch"
     >
-      {/* Phantom text: renders the full wordmark invisibly to reserve exact width and prevent header layout shift */}
+      {/* Invisible reservation layer: renders the full wordmark invisibly at all times to reserve exact width */}
       <div className="invisible select-none flex items-center leading-none" aria-hidden="true">
-        <span className="text-white">favoura</span>
-        <span className="brand-gradient-text">fetch</span>
+        {LETTERS.map((char, index) => (
+          <span
+            key={`phantom-${index}`}
+            className={`inline-block ${index < 7 ? 'text-white' : 'brand-gradient-text'}`}
+          >
+            {char}
+          </span>
+        ))}
         {!prefersReducedMotion && (
           <span className="inline-block w-[2px] ml-[2px]" aria-hidden="true" />
         )}
       </div>
 
-      {/* Overlay typing text: absolutely positioned on top */}
-      <div className="absolute inset-0 flex items-center leading-none pointer-events-none">
-        <span className="text-white">{favouraSlice}</span>
-        <span className="brand-gradient-text">{fetchSlice}</span>
-        {!prefersReducedMotion && (
+      {/* Overlay animated layer: absolutely positioned, using only transform and opacity */}
+      <div
+        className={`absolute inset-0 flex items-center leading-none pointer-events-none ${
+          activeEffect === 'glitch' ? 'animate-wordmark-glitch' : ''
+        } ${activeEffect === 'pulse' ? 'animate-wordmark-pulse' : ''}`}
+        aria-hidden="true"
+      >
+        {LETTERS.map((char, index) => {
+          const isFavoura = index < 7;
+          let letterClass = `inline-block ${isFavoura ? 'text-white' : 'brand-gradient-text'}`;
+          let letterStyle: React.CSSProperties = {};
+
+          if (prefersReducedMotion || activeEffect === null) {
+            letterStyle = { opacity: 1, transform: 'none' };
+          } else if (activeEffect === 'typing') {
+            letterStyle = {
+              opacity: index < typedCount ? 1 : 0,
+              transform: 'none',
+            };
+          } else if (activeEffect === 'wave') {
+            letterClass += ' animate-wordmark-wave';
+            letterStyle = { animationDelay: `${index * 55}ms` };
+          } else if (activeEffect === 'flip') {
+            letterClass += ' animate-wordmark-flip';
+            letterStyle = { animationDelay: `${index * 40}ms` };
+          } else if (activeEffect === 'shimmer') {
+            letterClass += ' animate-wordmark-shimmer';
+            letterStyle = { animationDelay: `${index * 75}ms` };
+          } else if (activeEffect === 'drop_in') {
+            letterClass += ' animate-wordmark-drop';
+            letterStyle = { animationDelay: `${index * 65}ms` };
+          } else if (activeEffect === 'scatter') {
+            letterClass += ' animate-wordmark-scatter';
+            const offset = SCATTER_OFFSETS[index] || { tx: '-6px', ty: '6px', rot: '-10deg' };
+            letterStyle = {
+              animationDelay: `${index * 50}ms`,
+              ['--tx' as string]: offset.tx,
+              ['--ty' as string]: offset.ty,
+              ['--rot' as string]: offset.rot,
+            };
+          }
+
+          return (
+            <span key={`animated-${index}`} className={letterClass} style={letterStyle}>
+              {char}
+            </span>
+          );
+        })}
+
+        {/* Blinking cyan cursor for typing effect */}
+        {activeEffect === 'typing' && showCursor && !prefersReducedMotion && (
           <span
             aria-hidden="true"
-            className="inline-block w-[2px] h-[0.8em] bg-[#00C2FF] ml-[2px] animate-cursor-blink"
+            className="inline-block w-[2px] h-[0.8em] bg-[#00C2FF] ml-[2px] animate-cursor-blink self-center"
           />
         )}
       </div>
@@ -132,6 +350,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSecti
           className="flex items-center gap-2 min-w-0 flex-[1_1_auto] text-left focus-visible:ring-2 focus-visible:ring-[#7A3CFF] rounded-lg p-0.5 cursor-pointer group"
           aria-label="FavouraFetch Home"
         >
+          {/* Static logo icon */}
           <img
             src={LOGO_URL}
             alt="FavouraFetch logo"
@@ -174,13 +393,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSecti
 
         {/* Right Action Container: flex: 0 0 auto */}
         <div className="flex items-center gap-2 shrink-0 flex-[0_0_auto]">
-          {/* Get Started Button:
-              - white-space: nowrap
-              - compact padding 10px 14px, font-size 14px
-              - <480px: hide text, show circular gradient button with down-arrow icon
-              - >=480px: show full text
-              - flex: 0 0 auto
-          */}
+          {/* Get Started Button */}
           <button
             type="button"
             onClick={onScrollToInput}

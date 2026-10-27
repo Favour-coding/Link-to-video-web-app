@@ -14,8 +14,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { VideoInfo, FormatOption } from '../types.ts';
-import { formatDuration, getPlatformMeta } from '../utils/helpers.ts';
-import { isPortraitVideo } from '../utils/siteConfigs.ts';
+import { formatDuration } from '../utils/helpers.ts';
+import { isPortraitVideo, resolveSiteBrand } from '../utils/siteConfigs.ts';
 
 interface ResultCardProps {
   video: VideoInfo;
@@ -29,9 +29,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({ video, onDownload, onCha
   const [copiedTitle, setCopiedTitle] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  // Platform or site metadata
-  const platformMeta = video.platform ? getPlatformMeta(video.platform) : null;
-  const siteLabel = video.site || platformMeta?.name || 'Video';
+  // Platform and official brand metadata resolution
+  const siteBrand = resolveSiteBrand(video.site || video.platform, video.originalUrl);
+  const BrandIcon = siteBrand.icon;
 
   // Sizing: Portrait (TikTok, Instagram, Shorts, etc.) vs 16:9
   const isPortrait = isPortraitVideo(video.originalUrl, video.site || video.platform);
@@ -63,17 +63,19 @@ export const ResultCard: React.FC<ResultCardProps> = ({ video, onDownload, onCha
     <div className="w-full max-w-[720px] mx-auto mt-6 glass-card rounded-2xl sm:rounded-3xl border border-[#1B2742] overflow-hidden shadow-[0_12px_45px_rgba(0,0,0,0.5)] transition-all animate-fadeIn">
       {/* Top Bar with "Change link" button and site badge */}
       <div className="px-4 sm:px-6 py-3.5 bg-[#070B16] border-b border-[#1B2742] flex items-center justify-between gap-3">
-        {/* Site Badge */}
+        {/* Top Badge: rounded pill with 20px brand icon followed by site name in accent color, NO dot */}
         <div className="flex items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-              platformMeta ? platformMeta.bg : 'bg-[#00C2FF]/15 text-[#00C2FF] border-[#00C2FF]/30'
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-            <span>{siteLabel}</span>
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-[#0E1526] border border-[#1B2742] shadow-sm">
+            <BrandIcon
+              className="w-5 h-5 shrink-0"
+              style={{ color: siteBrand.color }}
+              aria-label={siteBrand.name}
+              role="img"
+            />
+            <span style={{ color: siteBrand.color }}>{siteBrand.name}</span>
           </span>
         </div>
+
 
         {/* Change Link Button */}
         <button
@@ -154,9 +156,17 @@ export const ResultCard: React.FC<ResultCardProps> = ({ video, onDownload, onCha
                 <Play className="w-7 h-7 sm:w-8 sm:h-8 fill-white translate-x-0.5 group-hover/play:scale-110 transition-transform" />
               </button>
 
-              {/* Site Badge in top corner */}
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/80 backdrop-blur-md text-[#E8EEFF] text-xs font-semibold border border-[#1B2742] shadow-sm">
-                <span>{siteLabel}</span>
+              {/* Thumbnail badge: show only brand icon (24px) inside small dark rounded circle in corner, no text */}
+              <div
+                className="absolute top-3 left-3 w-10 h-10 rounded-full bg-black/85 backdrop-blur-md flex items-center justify-center border border-[#1B2742] shadow-md"
+                title={siteBrand.name}
+              >
+                <BrandIcon
+                  className="w-6 h-6 shrink-0"
+                  style={{ color: siteBrand.color }}
+                  aria-label={siteBrand.name}
+                  role="img"
+                />
               </div>
 
               {/* Duration Badge in bottom corner formatted as m:ss or h:mm:ss */}
