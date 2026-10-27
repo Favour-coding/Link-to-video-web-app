@@ -1,1 +1,59 @@
 @import "tailwindcss";
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+/* Brand gradient utilities */
+.brand-gradient-bg {
+  background: linear-gradient(90deg, #7A3CFF 0%, #3B82F6 50%, #00C2FF 100%);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(90deg, #7A3CFF 0%, #3B82F6 50%, #00C2FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass card styling */
+.glass-card {
+  background-color: rgba(14, 21, 38, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #1B2742;
+}
+
+/* Hover lift transition */
+.hover-lift {
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+.hover-lift:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+/* Keyboard focus visibility for accessibility */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #7A3CFF !important;
+  outline-offset: 2px !important;
+}
+
+/* Ensure no square outline or shadow on input fields */
+input, input:focus, input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transform: none !important;
+  }
+}

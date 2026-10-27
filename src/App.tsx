@@ -4,22 +4,29 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Header } from './components/Header.tsx';
-import { PlatformChips } from './components/PlatformChips.tsx';
-import { InputCard } from './components/InputCard.tsx';
-import { LoadingCard } from './components/LoadingCard.tsx';
+import { Navbar, LOGO_URL } from './components/Navbar.tsx';
+import { InputBar } from './components/InputBar.tsx';
+import { SkeletonCard } from './components/SkeletonCard.tsx';
 import { ResultCard } from './components/ResultCard.tsx';
 import { PlaylistCard } from './components/PlaylistCard.tsx';
 import { ErrorCard } from './components/ErrorCard.tsx';
+import { SupportedSites } from './components/SupportedSites.tsx';
+import { AllTools } from './components/AllTools.tsx';
+import { HowItWorks } from './components/HowItWorks.tsx';
+import { StatsRow } from './components/StatsRow.tsx';
+import { TrustChips } from './components/TrustChips.tsx';
 import { HistoryCard } from './components/HistoryCard.tsx';
-import { PreparingToast } from './components/PreparingToast.tsx';
 import { Footer } from './components/Footer.tsx';
-import { VideoInfo, FormatOption, HistoryItem, ErrorState, PlatformId } from './types.ts';
+import { LegalModal } from './components/LegalModal.tsx';
+import { PreparingToast } from './components/PreparingToast.tsx';
+import { VideoInfo, FormatOption, HistoryItem, ErrorState } from './types.ts';
 import { isValidUrl, detectPlatform, formatPlaylistCount } from './utils/helpers.ts';
+import { SITE_CONFIGS, validateUrlForSite, SiteConfig } from './utils/siteConfigs.ts';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 
 // =========================================================================
 // BACKEND CONFIGURATION
-// >>> CHANGE API_BASE_URL BELOW TO POINT TO YOUR BACKEND SERVER <<<
+// >>> KEEP EXISTING API_BASE_URL EXACTLY AS IT IS <<<
 // =========================================================================
 const API_BASE_URL = "https://linksaver-backend-6vsr.onrender.com";
 // =========================================================================
@@ -32,7 +39,15 @@ export default function App() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState<ErrorState | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [mismatchSiteError, setMismatchSiteError] = useState<{ message: string; onGoHome: () => void } | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // Hash-based routing state
+  const [currentSlug, setCurrentSlug] = useState<string>('');
+  const currentSiteConfig: SiteConfig | undefined = SITE_CONFIGS[currentSlug];
+
+  // Legal modal state
+  const [legalModalType, setLegalModalType] = useState<'terms' | 'privacy' | null>(null);
 
   // Toast notification state
   const [showToast, setShowToast] = useState(false);
@@ -41,6 +56,42 @@ export default function App() {
   const [isToastPlaylist, setIsToastPlaylist] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Sync hash routing and update document title and meta description
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash || '';
+      let slug = '';
+      if (hash.startsWith('#/')) {
+        slug = hash.slice(2).trim().toLowerCase();
+      }
+      setCurrentSlug(slug);
+      setMismatchSiteError(null);
+      setValidationError(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Update page title and meta description
+      const config = SITE_CONFIGS[slug];
+      if (config) {
+        document.title = `FavouraFetch - ${config.headingPrefix}`;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', config.metaDescription);
+      } else {
+        document.title = 'FavouraFetch - Paste. Pick. Fetch. | Video Downloader';
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+          metaDesc.setAttribute(
+            'content',
+            'FavouraFetch: Paste a link, pick a quality, save it. Download videos from any link.'
+          );
+        }
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Load history from localStorage on initial render
   useEffect(() => {
@@ -60,7 +111,6 @@ export default function App() {
   // Save history to localStorage
   const saveHistoryItem = (item: HistoryItem) => {
     setHistory((prev) => {
-      // Remove any duplicate of the same URL, then prepend and keep only 5
       const filtered = prev.filter((h) => h.url.toLowerCase() !== item.url.toLowerCase());
       const updated = [item, ...filtered].slice(0, 5);
       try {
@@ -93,12 +143,30 @@ export default function App() {
     });
   };
 
-  // Detected platform based on current input
-  const activePlatform: PlatformId = detectPlatform(url);
+  const navigateTo = (slug: string) => {
+    window.location.hash = slug ? `#/${slug}` : '#/';
+  };
+
+  const scrollToInput = () => {
+    const el = document.getElementById('video-input-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      const input = el.querySelector('input');
+      if (input) input.focus();
+    }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // Validate the link before sending
   const validateInput = (): boolean => {
     setValidationError(null);
+    setMismatchSiteError(null);
     const trimmed = url.trim();
 
     if (!trimmed) {
@@ -132,7 +200,23 @@ export default function App() {
       return;
     }
 
+    // Domain validation on dedicated site pages
+    if (currentSiteConfig) {
+      const isAllowed = validateUrlForSite(linkToFetch, currentSiteConfig);
+      if (!isAllowed) {
+        setMismatchSiteError({
+          message: `This page only accepts ${currentSiteConfig.name} links. Use the home page for other sites.`,
+          onGoHome: () => {
+            setMismatchSiteError(null);
+            navigateTo('');
+          },
+        });
+        return; // Do NOT call backend!
+      }
+    }
+
     setValidationError(null);
+    setMismatchSiteError(null);
     setError(null);
     setVideoInfo(null);
     setIsLoading(true);
@@ -168,7 +252,6 @@ export default function App() {
           // Response was not JSON
         }
 
-        // Categorize the error state
         const lowerMsg = serverErrorMsg.toLowerCase();
         let errorType: ErrorState['type'] = 'generic';
         let errorTitle = 'Unable to download video';
@@ -209,6 +292,10 @@ export default function App() {
         title: data.title || (isPlaylist ? 'Untitled Playlist' : 'Untitled Video'),
         thumbnail: data.thumbnail || '',
         duration: typeof data.duration === 'number' ? data.duration : parseFloat(data.duration) || 0,
+        uploader: data.uploader || '',
+        site: data.site || currentSiteConfig?.name || '',
+        embedUrl: data.embedUrl || '',
+        previewUrl: data.previewUrl || '',
         formats: Array.isArray(data.formats) ? data.formats : [],
         platform: platform,
         originalUrl: linkToFetch,
@@ -222,7 +309,7 @@ export default function App() {
 
       setVideoInfo(parsedInfo);
 
-      // Add to last 5 history items
+      // Add to history
       const countLabel = isPlaylist ? formatPlaylistCount(parsedInfo) : undefined;
       saveHistoryItem({
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -243,7 +330,7 @@ export default function App() {
           type: 'network',
           title: 'Request Timed Out',
           message:
-            'The request took over 60 seconds. Free cloud instances (Render) sleep when idle and may take up to a minute to boot up. Please click Retry below to try again.',
+            'The request took over 60 seconds. Free cloud instances sleep when idle and may take a moment to wake up. Please click Retry below to try again.',
           canRetry: true,
         });
       } else {
@@ -251,7 +338,7 @@ export default function App() {
           type: 'network',
           title: 'Network Error',
           message:
-            'Failed to connect to the LinkSaver service. Please check your network connection or verify that the backend server is reachable.',
+            'Failed to connect to the FavouraFetch service. Please check your internet connection or verify that the server is reachable.',
           canRetry: true,
         });
       }
@@ -279,8 +366,6 @@ export default function App() {
     if (!format.downloadUrl) return;
 
     // 3. Long waits message:
-    // For ZIP (playlist) downloads: "Preparing your playlist. This can take several minutes, please keep this page open."
-    // Otherwise: "Preparing your file. Please keep this page open."
     const isZip = Boolean(
       isPlaylistZip ||
       format.ext?.toLowerCase() === 'zip' ||
@@ -308,6 +393,7 @@ export default function App() {
 
   const handleSelectHistory = (item: HistoryItem) => {
     setUrl(item.url);
+    scrollToInput();
     handleFetchVideo(item.url);
   };
 
@@ -316,25 +402,71 @@ export default function App() {
     setVideoInfo(null);
     setError(null);
     setValidationError(null);
+    setMismatchSiteError(null);
+    scrollToInput();
   };
 
   return (
-    <div className="min-h-screen bg-[#060b18] text-slate-100 flex flex-col justify-between relative overflow-x-hidden">
-      {/* Electric Blue Ambient Glows */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-cyan-500/15 via-blue-600/10 to-transparent blur-[120px] pointer-events-none -z-10" />
-      <div className="fixed bottom-0 right-0 w-[400px] h-[300px] bg-blue-600/10 blur-[140px] pointer-events-none -z-10" />
-      <div className="fixed top-1/3 left-0 w-[350px] h-[250px] bg-cyan-600/10 blur-[130px] pointer-events-none -z-10" />
+    <div className="min-h-screen bg-[#070B16] text-[#E8EEFF] flex flex-col justify-between relative overflow-x-hidden selection:bg-[#7A3CFF] selection:text-white">
+      {/* Soft Design System Glows */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[650px] h-[340px] bg-[#7A3CFF]/15 blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed bottom-1/4 right-0 w-[500px] h-[350px] bg-[#00C2FF]/10 blur-[160px] pointer-events-none -z-10" />
 
-      {/* Main Content Area */}
-      <main className="w-full max-w-xl mx-auto px-4 py-4 sm:py-6 flex-1 flex flex-col justify-start">
-        {/* Header */}
-        <Header />
+      {/* 1. Floating Pill Navbar */}
+      <Navbar
+        onScrollToInput={scrollToInput}
+        onScrollToSection={scrollToSection}
+      />
 
-        {/* Supported Platforms Badges (YouTube, TikTok, Instagram, Facebook, X and many more sites) */}
-        <PlatformChips activePlatform={activePlatform} />
+      {/* 2. Hero with Link Input and Results Area */}
+      <main className="w-full max-w-4xl mx-auto px-4 pt-6 sm:pt-10 flex-1 flex flex-col justify-start">
+        {/* Hero Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          {/* Back to all sites link when on a dedicated site page */}
+          {currentSiteConfig ? (
+            <div className="flex justify-center mb-3">
+              <button
+                type="button"
+                onClick={() => navigateTo('')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8A97B8] hover:text-[#00C2FF] transition-colors py-1 px-3.5 rounded-full bg-[#0E1526] border border-[#1B2742] cursor-pointer hover-lift shadow-sm"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-[#00C2FF]" />
+                <span>Back to all sites</span>
+              </button>
+            </div>
+          ) : (
+            /* Tagline Badge for Home Page */
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0E1526] border border-[#1B2742] text-xs font-semibold text-[#00C2FF] uppercase tracking-wider mb-4 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-[#7A3CFF]" />
+              <span>Paste. Pick. Fetch.</span>
+            </div>
+          )}
 
-        {/* Big Rounded Input Card */}
-        <InputCard
+          {/* Heading */}
+          {currentSiteConfig ? (
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white max-w-2xl mx-auto leading-tight">
+              Download{' '}
+              <span style={{ color: currentSiteConfig.color }}>
+                {currentSiteConfig.name}
+              </span>{' '}
+              videos
+            </h1>
+          ) : (
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white max-w-2xl mx-auto leading-tight">
+              Download videos from <span className="brand-gradient-text">any link</span>
+            </h1>
+          )}
+
+          {/* Hero Support Line */}
+          <p className="text-sm sm:text-base text-[#8A97B8] max-w-md mx-auto mt-3 leading-relaxed">
+            {currentSiteConfig
+              ? `Fast, free ${currentSiteConfig.name} video downloader in high resolution MP4 & MP3.`
+              : 'Paste a link, pick a quality, save it.'}
+          </p>
+        </div>
+
+        {/* Input Bar with custom placeholder and site mismatch error */}
+        <InputBar
           url={url}
           setUrl={setUrl}
           onSubmit={() => {
@@ -342,59 +474,85 @@ export default function App() {
               handleFetchVideo();
             }
           }}
+          onScrollToHowItWorks={() => scrollToSection('how-it-works')}
           isLoading={isLoading}
-          activePlatform={activePlatform}
+          placeholder={currentSiteConfig ? currentSiteConfig.placeholder : 'Paste a video link'}
           validationError={validationError}
-          onClearValidationError={() => setValidationError(null)}
+          onClearValidationError={() => {
+            setValidationError(null);
+            setMismatchSiteError(null);
+          }}
+          mismatchSiteError={mismatchSiteError}
         />
 
-        {/* Loading State */}
-        {isLoading && <LoadingCard onCancel={handleCancelRequest} />}
+        {/* Results Area */}
+        {/* Loading State: Skeleton loading card while waiting */}
+        {isLoading && <SkeletonCard onCancel={handleCancelRequest} />}
 
-        {/* Error State with Retry Button */}
+        {/* Error State with Try again and Change link */}
         {error && !isLoading && (
           <ErrorCard
             error={error}
             onRetry={() => handleFetchVideo()}
-            onClear={() => {
-              setError(null);
-              setValidationError(null);
-            }}
+            onClear={handleReset}
           />
         )}
 
-        {/* Result Card: Video or Playlist */}
+        {/* Result Card: Video Preview or Playlist */}
         {videoInfo && !isLoading && !error && (
           videoInfo.type === 'playlist' ? (
             <PlaylistCard
               playlist={videoInfo}
               onDownloadZip={(fmt) => handleDownload(fmt, true)}
               onFetchSingleVideo={(entryUrl) => handleFetchVideo(entryUrl)}
-              onReset={handleReset}
+              onChangeLink={handleReset}
               isFetchingSingle={isLoading}
             />
           ) : (
             <ResultCard
               video={videoInfo}
               onDownload={(fmt) => handleDownload(fmt, false)}
-              onReset={handleReset}
+              onChangeLink={handleReset}
             />
           )
         )}
 
-        {/* Download History (Last 5 Links) */}
-        {!isLoading && (
-          <HistoryCard
-            history={history}
-            onSelect={handleSelectHistory}
-            onClear={clearHistory}
-            onRemoveItem={removeHistoryItem}
-          />
-        )}
+        {/* 3. Supported Sites Section with active site highlighted & navigation */}
+        <SupportedSites
+          activeSiteSlug={currentSlug}
+          onNavigate={(slug) => navigateTo(slug)}
+        />
+
+        {/* 4. All Tools Section */}
+        <AllTools onSelectActiveTool={scrollToInput} />
+
+        {/* 5. How to Download Section */}
+        <HowItWorks />
+
+        {/* 6. Stats Row Section */}
+        <StatsRow />
+
+        {/* 7. Trust Chips Section */}
+        <TrustChips />
+
+        {/* 8. Recent Links Section */}
+        <HistoryCard
+          history={history}
+          onSelect={handleSelectHistory}
+          onClear={clearHistory}
+          onRemoveItem={removeHistoryItem}
+        />
       </main>
 
-      {/* Footer with required copyright & terms notice */}
-      <Footer />
+      {/* 9. Footer */}
+      <Footer onOpenLegal={(type) => setLegalModalType(type)} />
+
+      {/* Legal Pages Modal (Terms & Privacy) */}
+      <LegalModal
+        isOpen={Boolean(legalModalType)}
+        type={legalModalType}
+        onClose={() => setLegalModalType(null)}
+      />
 
       {/* Download Preparing Toast with long waits messaging */}
       <PreparingToast

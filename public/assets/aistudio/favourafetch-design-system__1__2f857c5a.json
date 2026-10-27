@@ -1,0 +1,217 @@
+{
+  "name": "FavouraFetch Design System",
+  "version": "1.0.0",
+  "instructions_for_ai": "Treat this file as the single source of truth for the FavouraFetch front end. Apply every section. Never change functionality or the existing API_BASE_URL value. If anything here conflicts with working behavior, keep the working behavior and tell the user.",
+  "brand": {
+    "app_name": "FavouraFetch",
+    "wordmark": {
+      "part_1": { "text": "favoura", "color": "#FFFFFF" },
+      "part_2": { "text": "fetch", "color": "gradient" }
+    },
+    "tagline": "Paste. Pick. Fetch.",
+    "hero_subtitle": "Download videos from any link",
+    "hero_support_line": "Paste a link, pick a quality, save it.",
+    "logo": "Use the attached logo image in the navbar, footer and as favicon. Logo has a black background and fits the dark theme."
+  },
+  "pattern": {
+    "type": "Single-page tool landing, mobile-first",
+    "cta": "Link input is the main focus above the fold; 'Get Started' navbar button scrolls to it",
+    "sections_in_order": [
+      "Floating pill navbar",
+      "Hero with link input and results area",
+      "Supported sites",
+      "All tools",
+      "How to download",
+      "Stats row",
+      "Trust chips",
+      "Recent links",
+      "Footer"
+    ]
+  },
+  "style": {
+    "name": "Modern dark glass",
+    "keywords": ["glassmorphism", "soft glows", "rounded", "thin borders", "premium", "calm"],
+    "corner_radius_px": { "min": 16, "max": 24 },
+    "border": "1px solid #1B2742",
+    "card_effect": "semi-transparent card with light backdrop blur",
+    "glows": [
+      { "color": "#7A3CFF", "position": "top center", "note": "soft, blurred" },
+      { "color": "#00C2FF", "position": "lower area", "note": "faint, blurred" }
+    ]
+  },
+  "colors": {
+    "background": "#070B16",
+    "card": "#0E1526",
+    "border": "#1B2742",
+    "text": "#E8EEFF",
+    "text_muted": "#8A97B8",
+    "brand_gradient": {
+      "stops": ["#7A3CFF", "#3B82F6", "#00C2FF"],
+      "css": "linear-gradient(90deg, #7A3CFF 0%, #3B82F6 50%, #00C2FF 100%)",
+      "use_for": ["primary buttons", "the word 'fetch'", "glows", "highlights", "active states"]
+    },
+    "success": "#22C55E",
+    "error": "#F43F5E",
+    "warning": "#F5B544"
+  },
+  "typography": {
+    "font_family": "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif",
+    "google_fonts_import": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+    "scale_px": {
+      "hero_headline": "36 to 48, bold",
+      "section_title": "20 to 24, semibold",
+      "body": "15 to 16",
+      "caption": 13
+    },
+    "rules": ["Long text and URLs must wrap, never clip", "Keep line length comfortable on phones"]
+  },
+  "effects": {
+    "load": "gentle fade-in",
+    "hover": "lift 2px on buttons and cards, glow in the item's own color",
+    "tap": "visible pressed state",
+    "transition_ms": 200,
+    "reduced_motion": "respect prefers-reduced-motion and disable non-essential animation"
+  },
+  "layout": {
+    "mobile_first": true,
+    "test_widths_px": [360, 375, 768, 1024, 1440],
+    "min_button_height_px": 44,
+    "no_horizontal_scroll": true,
+    "grid": {
+      "supported_sites": { "phone": 2, "desktop": 4 },
+      "stats": { "phone": "2 or 3", "desktop": 6 }
+    }
+  },
+  "navbar": {
+    "shape": "floating pill",
+    "left": "logo",
+    "middle_links": ["Download", "Supported sites", "Tools", "How it works"],
+    "right": "gradient 'Get Started' button that scrolls to the input",
+    "mobile": "collapse links into a menu icon"
+  },
+  "input_bar": {
+    "style": "glassy command bar",
+    "contains": ["link icon", "text input", "clear button", "Paste button (reads clipboard)"],
+    "buttons_below": [
+      { "label": "Get Video", "style": "filled brand gradient" },
+      { "label": "How it works", "style": "ghost" }
+    ]
+  },
+  "supported_sites": {
+    "icon_source": {
+      "primary": "react-icons/si (Simple Icons)",
+      "fallback": "https://cdn.simpleicons.org/<name>/<hex without #>"
+    },
+    "card_style": "glass card, icon 28 to 32px on the left, site name beside it, glow in icon color on hover",
+    "sites": [
+      { "name": "YouTube", "react_icon": "SiYoutube", "cdn_name": "youtube", "color": "#FF0000" },
+      { "name": "TikTok", "react_icon": "SiTiktok", "cdn_name": "tiktok", "color": "#FFFFFF" },
+      { "name": "Instagram", "react_icon": "SiInstagram", "cdn_name": "instagram", "color": "#E4405F" },
+      { "name": "Facebook", "react_icon": "SiFacebook", "cdn_name": "facebook", "color": "#1877F2" },
+      { "name": "X", "react_icon": "SiX", "cdn_name": "x", "color": "#FFFFFF" },
+      { "name": "Vimeo", "react_icon": "SiVimeo", "cdn_name": "vimeo", "color": "#1AB7EA" },
+      { "name": "Dailymotion", "react_icon": "SiDailymotion", "cdn_name": "dailymotion", "color": "#0066DC" },
+      { "name": "Reddit", "react_icon": "SiReddit", "cdn_name": "reddit", "color": "#FF4500" },
+      { "name": "Pinterest", "react_icon": "SiPinterest", "cdn_name": "pinterest", "color": "#E60023" },
+      { "name": "Threads", "react_icon": "SiThreads", "cdn_name": "threads", "color": "#FFFFFF" },
+      { "name": "VK", "react_icon": "SiVk", "cdn_name": "vk", "color": "#0077FF" },
+      { "name": "and many more", "icon": "plus", "color": "#8A97B8" }
+    ],
+    "disclaimer": "Brand names and logos belong to their respective owners. FavouraFetch is not affiliated with these services."
+  },
+  "tools": [
+    { "title": "Video Downloader", "status": "active", "description": "Paste a link and download the video" },
+    { "title": "MP4 to MP3", "status": "coming_soon", "description": "Extract audio from a video file" },
+    { "title": "MOV to MP4", "status": "coming_soon", "description": "Convert MOV files to MP4" },
+    { "title": "MKV to MP4", "status": "coming_soon", "description": "Convert MKV files to MP4" },
+    { "title": "WEBM to MP4", "status": "coming_soon", "description": "Convert WEBM files to MP4" },
+    { "title": "MP4 to GIF", "status": "coming_soon", "description": "Turn a video clip into a GIF" },
+    { "title": "YouTube Subtitles", "status": "coming_soon", "description": "Download subtitles from a video" },
+    { "title": "YouTube Transcript", "status": "coming_soon", "description": "Get the text of a video" }
+  ],
+  "tools_rules": "Cards with status coming_soon show a 'Coming soon' badge and are not clickable.",
+  "how_it_works": {
+    "steps": [
+      "Copy the video link",
+      "Paste it and tap Get Video",
+      "Choose a quality and download"
+    ],
+    "tutorial_button": { "label": "Watch the tutorial", "state": "disabled", "badge": "Coming soon" }
+  },
+  "stats": [
+    { "value": "4", "label": "Quality options" },
+    { "value": "12h", "label": "Max video length" },
+    { "value": "ZIP", "label": "Playlist downloads" },
+    { "value": "MP3", "label": "Audio only" },
+    { "value": "Many", "label": "Supported sites" },
+    { "value": "Free", "label": "No sign-up" }
+  ],
+  "trust_chips": ["No sign-up", "Free to use", "Works on phone and laptop", "Files are deleted after download"],
+  "trust_rules": "Do NOT add star ratings, review counts, security-scan badges or any claim that is not true.",
+  "footer": {
+    "contains": ["logo", "tagline", "Terms of Service link", "Privacy Policy link", "usage notice"],
+    "legal_pages": "Terms and Privacy open as a simple modal or page with short placeholder text the owner can edit later",
+    "usage_notice": "Only download content you own or have permission to save. Respect creators' rights and each platform's terms."
+  },
+  "functionality_to_preserve": {
+    "api_base_url": "Keep the existing API_BASE_URL value exactly as it is. Never replace it with a placeholder.",
+    "features": [
+      "Paste button and Clear button",
+      "Get Video flow: POST {API_BASE_URL}/api/info with { url }",
+      "Download history of the last 5 links in localStorage with a Clear button",
+      "Error states with a Retry button, showing the message from { error }",
+      "60 second fetch timeout with try/catch",
+      "Downloads start by navigating to the downloadUrl, never by fetching the file in JavaScript"
+    ],
+    "backend_response": {
+      "video": {
+        "type": "video",
+        "title": "string",
+        "thumbnail": "string",
+        "duration": "seconds",
+        "formats": [
+          { "label": "string", "ext": "string", "locked": "boolean", "note": "string", "downloadUrl": "string, empty when locked" }
+        ]
+      },
+      "playlist": {
+        "type": "playlist",
+        "title": "string",
+        "thumbnail": "string",
+        "duration": "total seconds",
+        "count": "number of videos taken",
+        "total": "number of videos in the playlist",
+        "entries": [{ "title": "string", "duration": "seconds", "thumbnail": "string", "url": "string" }],
+        "formats": "same shape as video formats (ZIP downloads)"
+      }
+    },
+    "locked_formats": "Show greyed out with a lock icon, disabled, with the note text underneath. Never trigger a download for them.",
+    "playlist_ui": "Playlist card with title, thumbnail, 'count of total videos', total duration; list of entries each with a 'Get this video' button that runs that entry url through the normal flow; then ZIP download buttons.",
+    "waiting_messages": {
+      "file": "Preparing your file. Please keep this page open.",
+      "zip": "Preparing your playlist. This can take several minutes, please keep this page open."
+    },
+    "duration_format": "h:mm:ss when over one hour, otherwise mm:ss"
+  },
+  "anti_patterns": [
+    "Pure white backgrounds",
+    "Tiny or low-contrast text",
+    "Emojis used as icons (use SVG icons)",
+    "More than the brand gradient plus one accent color",
+    "Harsh or long animations, auto-playing motion",
+    "Long paragraphs and cluttered rows of buttons",
+    "Copying text, logos or branding from other websites",
+    "Fake ratings, reviews or security badges"
+  ],
+  "pre_delivery_checklist": [
+    "Text contrast is at least 4.5:1",
+    "Every button has a clear label and cursor-pointer on clickable elements",
+    "Focus states are visible for keyboard navigation",
+    "prefers-reduced-motion is respected",
+    "Text, chips and badges reflow without clipping at 360px wide",
+    "Responsive at 375, 768, 1024 and 1440px",
+    "Locked options are greyed out with a lock icon and note",
+    "Loading and error states look consistent",
+    "Nothing overflows horizontally on a small phone",
+    "API_BASE_URL is unchanged and the app still downloads videos"
+  ]
+}

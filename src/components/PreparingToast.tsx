@@ -24,7 +24,6 @@ export const PreparingToast: React.FC<PreparingToastProps> = ({
       return;
     }
 
-    // Auto-progress animation
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 98) {
@@ -34,7 +33,6 @@ export const PreparingToast: React.FC<PreparingToastProps> = ({
       });
     }, isPlaylist ? 250 : 120);
 
-    // Auto dismiss after 10s for single file or 15s for playlist
     const timer = setTimeout(() => {
       onDismiss();
     }, isPlaylist ? 15000 : 9000);
@@ -50,34 +48,34 @@ export const PreparingToast: React.FC<PreparingToastProps> = ({
   return (
     <aside
       aria-label="Download status notification"
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-slideUp"
+      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-lg animate-slideUp"
     >
-      <div className="bg-[#0b1329]/95 backdrop-blur-xl border border-cyan-400/60 rounded-2xl p-4 shadow-[0_12px_45px_rgba(6,182,212,0.4)] text-white">
+      <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-[#3B82F6]/50 shadow-[0_12px_45px_rgba(0,0,0,0.6)] text-[#E8EEFF]">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-cyan-950/80 border border-cyan-400/50 text-cyan-400 shrink-0 shadow-inner">
+          <div className="flex items-center gap-3.5">
+            <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-[#070B16] border border-[#1B2742] text-[#00C2FF] shrink-0 shadow-inner">
               {progress < 98 ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <CheckCircle2 className="w-5 h-5 text-[#22C55E]" />
               )}
             </div>
 
             <div className="min-w-0">
-              <h4 className="text-sm font-bold text-white leading-snug">
+              <h4 className="text-sm font-bold text-[#E8EEFF] leading-snug">
                 {message || (isPlaylist
                   ? 'Preparing your playlist. This can take several minutes, please keep this page open.'
                   : 'Preparing your file. Please keep this page open.')}
               </h4>
-              <p className="text-xs text-slate-300 mt-1 flex items-center gap-1.5 truncate">
+              <p className="text-xs text-[#8A97B8] mt-1 flex items-center gap-1.5 truncate">
                 {isPlaylist ? (
                   <>
-                    <Archive className="w-3 h-3 text-cyan-400 shrink-0" />
+                    <Archive className="w-3.5 h-3.5 text-[#00C2FF] shrink-0" />
                     <span>Bundling video streams into ZIP archive...</span>
                   </>
                 ) : (
                   <>
-                    <Film className="w-3 h-3 text-cyan-400 shrink-0" />
+                    <Film className="w-3.5 h-3.5 text-[#7A3CFF] shrink-0" />
                     <span>{formatLabel ? `Encoding ${formatLabel}` : 'Extracting & converting media stream'}</span>
                   </>
                 )}
@@ -88,17 +86,17 @@ export const PreparingToast: React.FC<PreparingToastProps> = ({
           <button
             type="button"
             onClick={onDismiss}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
+            className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-xl text-[#8A97B8] hover:text-[#E8EEFF] hover:bg-[#1B2742] transition-colors shrink-0 cursor-pointer"
             aria-label="Dismiss notification"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Animated progress bar */}
-        <div className="w-full bg-slate-800/80 rounded-full h-1.5 mt-3 overflow-hidden">
+        {/* Animated brand gradient progress bar */}
+        <div className="w-full bg-[#070B16] rounded-full h-1.5 mt-3.5 overflow-hidden border border-[#1B2742]/50">
           <div
-            className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 h-1.5 transition-all duration-200 ease-linear rounded-full"
+            className="brand-gradient-bg h-1.5 transition-all duration-200 ease-linear rounded-full"
             style={{ width: `${progress}%` }}
           />
         </div>

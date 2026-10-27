@@ -23,6 +23,10 @@ export interface VideoInfo {
   title: string;
   thumbnail: string;
   duration: number; // in seconds
+  uploader?: string;
+  site?: string;
+  embedUrl?: string;
+  previewUrl?: string;
   formats: FormatOption[];
   platform?: PlatformId;
   originalUrl: string;
