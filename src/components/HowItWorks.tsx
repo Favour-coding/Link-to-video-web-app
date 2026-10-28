@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Copy, Sparkles, Download, Play } from 'lucide-react';
+import { TutorialModal } from './TutorialModal.tsx';
 
 export const HowItWorks: React.FC = () => {
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const steps = [
     {
       number: '1',
@@ -64,21 +66,24 @@ export const HowItWorks: React.FC = () => {
         })}
       </div>
 
-      {/* Tutorial Button with Coming soon badge */}
+      {/* Tutorial Button */}
       <div className="mt-8 flex justify-center">
         <button
           type="button"
-          disabled
-          className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#0E1526] border border-[#1B2742] text-[#8A97B8] text-xs sm:text-sm font-medium flex items-center gap-2 cursor-not-allowed opacity-80"
-          aria-disabled="true"
+          onClick={() => setIsTutorialOpen(true)}
+          className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#0E1526] border border-[#1B2742] hover:border-[#7A3CFF]/60 text-[#8A97B8] hover:text-[#E8EEFF] text-xs sm:text-sm font-medium flex items-center gap-2 transition-all cursor-pointer hover-lift shadow-sm group active:scale-[0.98]"
+          aria-label="Watch the tutorial"
         >
-          <Play className="w-3.5 h-3.5 text-[#8A97B8]" />
+          <Play className="w-3.5 h-3.5 text-[#00C2FF] fill-[#00C2FF]/20 group-hover:fill-[#00C2FF]/40 transition-colors" />
           <span>Watch the tutorial</span>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#1B2742] text-[#8A97B8] border border-[#1B2742]">
-            Coming soon
-          </span>
         </button>
       </div>
+
+      {/* Tutorial Video Modal */}
+      <TutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+      />
     </section>
   );
 };
