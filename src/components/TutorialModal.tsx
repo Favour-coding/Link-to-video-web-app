@@ -180,7 +180,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose })
           ) : (
             <video
               ref={videoRef}
-              src="/tutorial.mp4"
+              src="/assets/aistudio/tutorial.mp4"
               controls
               playsInline
               preload="metadata"
@@ -195,6 +195,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose })
                 objectFit: 'contain',
               }}
             >
+              <source src="/assets/aistudio/tutorial.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           )}
