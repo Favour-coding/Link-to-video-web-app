@@ -2,33 +2,56 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FavouraFetch - Video Downloader</title>
-    <meta name="description" content="Paste a link and download videos from supported platforms with FavouraFetch." />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0f1e" />
 
-    <!-- Open Graph Metadata (WhatsApp, Facebook, LinkedIn, Discord) -->
-    <meta property="og:site_name" content="FavouraFetch" />
+    <title>FavouraFetch - Download videos from any link</title>
+    <meta name="description" content="Paste a link from YouTube, TikTok, Instagram, Facebook, X and more. Preview the video, pick a quality and save it. Also MP3 converter, GIF maker, subtitles and transcripts." />
+    <link rel="canonical" href="https://favourafetch.vercel.app/" />
+
+    <!-- Open Graph Metadata -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="FavouraFetch" />
-    <meta property="og:description" content="Paste a link and download videos from supported platforms with FavouraFetch." />
-    <meta property="og:url" content="https://favourafetch.com" />
-    <meta property="og:image" content="https://favourafetch.com/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png" />
-    <meta property="og:image:secure_url" content="https://favourafetch.com/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1254" />
-    <meta property="og:image:height" content="1254" />
-    <meta property="og:image:alt" content="FavouraFetch Logo" />
+    <meta property="og:site_name" content="FavouraFetch" />
+    <meta property="og:url" content="https://favourafetch.vercel.app/" />
+    <meta property="og:title" content="FavouraFetch - Download videos from any link" />
+    <meta property="og:description" content="Paste a link, preview the video, pick a quality and save it. Works with YouTube, TikTok, Instagram, Facebook, X and more. Plus MP3, GIF, subtitles and transcripts." />
+    <meta property="og:image" content="https://favourafetch.vercel.app/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="FavouraFetch - download videos from any link. Paste, preview, pick quality, save." />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="FavouraFetch" />
-    <meta name="twitter:description" content="Paste a link and download videos from supported platforms with FavouraFetch." />
-    <meta name="twitter:image" content="https://favourafetch.com/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png" />
-    <meta name="twitter:image:alt" content="FavouraFetch Logo" />
+    <meta name="twitter:title" content="FavouraFetch - Download videos from any link" />
+    <meta name="twitter:description" content="Paste a link, preview the video, pick a quality and save it. Plus MP3, GIF, subtitles and transcripts." />
+    <meta name="twitter:image" content="https://favourafetch.vercel.app/og-image.jpg" />
 
-    <!-- Favicons & Touch Icons -->
-    <link rel="icon" type="image/png" href="/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png" />
-    <link rel="apple-touch-icon" href="/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png" />
+    <!-- Icons & PWA Manifest -->
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Search Engine Basics: Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "FavouraFetch",
+      "url": "https://favourafetch.vercel.app/",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Paste a link from YouTube, TikTok, Instagram, Facebook, X and more. Preview the video, pick a quality and save it. Also MP3 converter, GIF maker, subtitles and transcripts."
+    }
+    </script>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -38,4 +61,3 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

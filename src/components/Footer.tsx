@@ -1,12 +1,13 @@
 import React from 'react';
 import { LOGO_URL } from './Navbar.tsx';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Share2 } from 'lucide-react';
 
 interface FooterProps {
   onOpenLegal: (type: 'terms' | 'privacy') => void;
+  onShare?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenLegal, onShare }) => {
   return (
     <footer className="w-full max-w-4xl mx-auto mt-16 mb-10 px-4">
       {/* Usage Notice Box */}
@@ -40,8 +41,8 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
           </div>
         </div>
 
-        {/* Legal Links */}
-        <div className="flex items-center gap-6 text-xs sm:text-sm text-[#8A97B8]">
+        {/* Legal Links & Share */}
+        <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-[#8A97B8]">
           <button
             type="button"
             onClick={() => onOpenLegal('terms')}
@@ -56,6 +57,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
           >
             Privacy Policy
           </button>
+          {onShare && (
+            <button
+              type="button"
+              onClick={onShare}
+              aria-label="Share FavouraFetch"
+              title="Share FavouraFetch"
+              className="w-8 h-8 rounded-full bg-[#0E1526] border border-[#1B2742] hover:border-[#00C2FF] text-[#8A97B8] hover:text-[#00C2FF] flex items-center justify-center transition-all cursor-pointer hover-lift shadow-sm"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

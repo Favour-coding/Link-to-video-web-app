@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://favourafetch.vercel.app/sitemap.xml

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, ArrowDown } from 'lucide-react';
+import { Menu, X, ArrowDown, Share2 } from 'lucide-react';
 
 interface NavbarProps {
   onScrollToInput: () => void;
   onScrollToSection: (sectionId: string) => void;
+  onShare?: () => void;
 }
 
 export const LOGO_URL = "/assets/aistudio/file_000000004f648246954afcb807bd6425_206e7c64.png";
@@ -331,7 +332,7 @@ const AnimatedWordmark: React.FC = () => {
   );
 };
 
-export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSection }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSection, onShare }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavClick = (sectionId: string) => {
@@ -449,6 +450,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSecti
           >
             How it works
           </button>
+          {onShare && (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onShare();
+              }}
+              className="text-left py-2 px-3 rounded-xl text-sm font-medium text-[#E8EEFF] hover:bg-[#1B2742]/50 transition-colors cursor-pointer flex items-center justify-between border-t border-[#1B2742]/60 pt-3 mt-1"
+            >
+              <span className="flex items-center gap-2">
+                <Share2 className="w-4 h-4 text-[#00C2FF]" />
+                <span>Share FavouraFetch</span>
+              </span>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#7A3CFF]/20 text-[#00C2FF] border border-[#00C2FF]/30">
+                Share
+              </span>
+            </button>
+          )}
         </div>
       )}
     </nav>
