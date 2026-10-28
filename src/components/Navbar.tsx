@@ -390,6 +390,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSecti
           >
             How it works
           </button>
+          <a
+            href="#/about"
+            className="hover:text-[#E8EEFF] transition-colors cursor-pointer py-1 no-underline"
+          >
+            About
+          </a>
         </div>
 
         {/* Right Action Container: flex: 0 0 auto */}
@@ -450,6 +456,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onScrollToInput, onScrollToSecti
           >
             How it works
           </button>
+          <a
+            href="#/about"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-left py-2 px-3 rounded-xl text-sm font-medium text-[#8A97B8] hover:text-[#E8EEFF] hover:bg-[#1B2742]/50 transition-colors cursor-pointer no-underline"
+          >
+            About
+          </a>
           {onShare && (
             <button
               type="button"

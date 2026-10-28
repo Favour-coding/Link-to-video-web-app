@@ -27,6 +27,7 @@ import { Mp4ToMp3Tool } from './components/tools/Mp4ToMp3Tool.tsx';
 import { Mp4ToGifTool } from './components/tools/Mp4ToGifTool.tsx';
 import { SubtitlesTool } from './components/tools/SubtitlesTool.tsx';
 import { TranscriptTool } from './components/tools/TranscriptTool.tsx';
+import { AboutPage } from './components/AboutPage.tsx';
 
 // =========================================================================
 // BACKEND CONFIGURATION
@@ -162,6 +163,15 @@ export default function App() {
           metaDesc.setAttribute(
             'content',
             'Extract, read, copy, and export timestamped dialogue transcripts from YouTube videos.'
+          );
+        }
+      } else if (slug === 'about') {
+        document.title = 'About FavouraFetch - Favoura Tech';
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+          metaDesc.setAttribute(
+            'content',
+            'FavouraFetch was designed and built by Favoura Tech, founded by Favour. Learn more about our story, copyright, and business enquiries.'
           );
         }
       } else if (config) {
@@ -533,8 +543,12 @@ export default function App() {
         onShare={handleShare}
       />
 
-      {/* 2. Main Content: Dedicated Tool Page OR Home/Site Page */}
-      {currentSlug.startsWith('tools/') ? (
+      {/* 2. Main Content: About Page OR Dedicated Tool Page OR Home/Site Page */}
+      {currentSlug === 'about' ? (
+        <main className="w-full max-w-4xl mx-auto px-4 pt-6 sm:pt-10 flex-1 flex flex-col justify-start">
+          <AboutPage />
+        </main>
+      ) : currentSlug.startsWith('tools/') ? (
         <main className="w-full max-w-4xl mx-auto px-4 pt-6 sm:pt-10 flex-1 flex flex-col justify-start">
           {/* Back to all tools link */}
           <div className="flex justify-center mb-4">

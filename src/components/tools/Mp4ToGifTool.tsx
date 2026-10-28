@@ -160,7 +160,6 @@ export const Mp4ToGifTool: React.FC = () => {
         // Ignore
       }
     } catch (err: any) {
-      console.error('MP4 to GIF error:', err);
       setError('Failed to generate GIF. Please try a shorter duration or smaller dimensions.');
     } finally {
       setIsProcessing(false);

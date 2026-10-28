@@ -136,7 +136,6 @@ export const Mp4ToMp3Tool: React.FC = () => {
         // Ignore file cleanup errors
       }
     } catch (err: any) {
-      console.error('MP4 to MP3 error:', err);
       setError(
         err?.message?.includes('SharedArrayBuffer')
           ? 'Browser security settings prevented audio extraction. Please try in Chrome or Edge.'
